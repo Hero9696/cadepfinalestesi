@@ -1,5 +1,3 @@
-// app/Models/Donor.php
-
 <?php
 
 namespace App\Models;

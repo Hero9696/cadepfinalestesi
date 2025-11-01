@@ -1,5 +1,3 @@
-// app/Models/Employee.php
-
 <?php
 
 namespace App\Models;

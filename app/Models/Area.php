@@ -1,5 +1,3 @@
-// app/Models/Area.php
-
 <?php
 
 namespace App\Models;

@@ -1,5 +1,3 @@
-// app/Http/Controllers/StateController.php
-
 <?php
 
 namespace App\Http\Controllers;

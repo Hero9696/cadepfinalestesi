@@ -1,5 +1,3 @@
-// app/Http/Controllers/AreaController.php
-
 <?php
 
 namespace App\Http\Controllers;

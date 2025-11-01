@@ -1,5 +1,3 @@
-// app/Models/RegisteredDonor.php
-
 <?php
 
 namespace App\Models;

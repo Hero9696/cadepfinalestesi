@@ -1,5 +1,3 @@
-// app/Http/Controllers/DonorController.php
-
 <?php
 
 namespace App\Http\Controllers;

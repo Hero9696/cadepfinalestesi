@@ -1,5 +1,3 @@
-// app/Models/State.php
-
 <?php
 
 namespace App\Models;

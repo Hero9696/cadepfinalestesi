@@ -1,5 +1,3 @@
-// app/Models/Branch.php
-
 <?php
 
 namespace App\Models;

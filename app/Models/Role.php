@@ -1,5 +1,3 @@
-// app/Models/Role.php
-
 <?php
 
 namespace App\Models;
@@ -47,7 +45,7 @@ class Role extends Model
     public function creator()
     {
         // Se asume que el usuario creador existe en la tabla 'users'
-        return $this->belongsTo(User::class, 'idcreate_user_role', 'id_user');
+        return $this->belongsTo(User::class, 'idcreate_user_role', 'id');
     }
 
     /**
@@ -56,6 +54,6 @@ class Role extends Model
     public function updater()
     {
         // Se asume que el usuario actualizador existe en la tabla 'users'
-        return $this->belongsTo(User::class, 'idupdater_user_role', 'id_user');
+        return $this->belongsTo(User::class, 'idupdater_user_role', 'id');
     }
 }

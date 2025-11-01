@@ -26,31 +26,5 @@ Route::middleware('auth')->group(function () {
     Route::get('settings/two-factor', [TwoFactorAuthenticationController::class, 'show'])
         ->name('two-factor.show');
 
-        // --- NUEVAS RUTAS DE CONFIGURACIÓN ADMINISTRATIVA (Ej: /settings/admin/users) ---
-
-    // Ruta principal para la configuración administrativa
-    // Esta ruta cargará el componente Vue con las pestañas de administración (AdminConfigIndex)
-    Route::get('settings/admin', function () {
-        return Inertia::render('Settings/AdminConfigIndex');
-    })->name('admin.config.index');
-
-    // Rutas específicas para que Inertia pueda navegar directamente (Opcional, pero útil)
-    Route::get('settings/admin/users', function () {
-        return Inertia::render('Settings/AdminConfigIndex', ['activeTab' => 'users']);
-    })->name('admin.users.index');
-
-    Route::get('settings/admin/roles', function () {
-        return Inertia::render('Settings/AdminConfigIndex', ['activeTab' => 'roles']);
-    })->name('admin.roles.index');
-
-    Route::get('settings/admin/states', function () {
-        return Inertia::render('Settings/AdminConfigIndex', ['activeTab' => 'states']);
-    })->name('admin.states.index');
-
-    Route::get('settings/admin/departments', function () {
-        return Inertia::render('Settings/AdminConfigIndex', ['activeTab' => 'departments']);
-    })->name('admin.departments.index');
-
-    // Puedes agregar una redirección fácil:
-    Route::redirect('settings/admin', '/settings/admin/users');
+   
 });

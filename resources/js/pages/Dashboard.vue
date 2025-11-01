@@ -4,15 +4,10 @@ import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import PlaceholderPattern from '../components/PlaceholderPattern.vue';
-import { ref, computed } from 'vue'; // <--- AGREGADO
+import { ref, computed, markRaw } from 'vue'; // <--- markRaw AGREGADO
 
 // --- Importación de Módulos Administrativos ---
-// Asegúrate de que las rutas de importación sean correctas para tu proyecto
-import UserIndex from '@/components/Users/UserIndex.vue';
 import RoleIndex from '@/components/Roles/RoleIndex.vue';
-import StateIndex from '@/components/States/StateIndex.vue';
-import DepartmentIndex from '@/components/Departments/DepartmentIndex.vue';
-// Importaremos Municipalities y Branches en el siguiente paso
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -21,14 +16,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// --- Lógica de Pestañas (Igual que AdminConfigIndex) ---
+// --- Lógica de Pestañas (CORREGIDO) ---
 const tabs = ref([
-    { id: 'dashboard', title: 'Resumen', component: PlaceholderPattern }, // Usamos Placeholder para mantener el contenido original del Dashboard
-    { id: 'users', title: 'Usuarios', component: UserIndex },
-    { id: 'roles', title: 'Roles', component: RoleIndex },
-    { id: 'departments', title: 'Departamentos', component: DepartmentIndex },
-    { id: 'states', title: 'Estados', component: StateIndex },
-    // Agregaremos 'municipalities' y 'branches' aquí después
+    { id: 'dashboard', title: 'Resumen', component: markRaw(PlaceholderPattern) }, // Usar markRaw
+    { id: 'roles', title: 'Roles', component: markRaw(RoleIndex) },              // USAR markRaw AQUÍ
 ]);
 
 const activeTab = ref('dashboard');
@@ -40,6 +31,7 @@ const CurrentComponent = computed(() => {
     if (tab && tab.id === 'dashboard') {
         return PlaceholderPattern;
     }
+    // No es necesario usar markRaw o shallowRef aquí, ya que el componente ya fue marcado en `tabs`.
     return tab ? tab.component : null;
 });
 
@@ -47,6 +39,7 @@ const changeTab = (tabId: string) => {
     activeTab.value = tabId;
 };
 </script>
+
 
 <template>
     <Head title="Dashboard" />

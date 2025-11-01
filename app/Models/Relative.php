@@ -1,5 +1,3 @@
-// app/Models/Relative.php
-
 <?php
 
 namespace App\Models;

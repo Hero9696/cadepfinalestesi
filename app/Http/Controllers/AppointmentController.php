@@ -1,5 +1,3 @@
-// app/Http/Controllers/AppointmentController.php
-
 <?php
 
 namespace App\Http\Controllers;

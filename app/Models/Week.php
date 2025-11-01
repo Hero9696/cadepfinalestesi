@@ -1,5 +1,3 @@
-// app/Models/Week.php
-
 <?php
 
 namespace App\Models;

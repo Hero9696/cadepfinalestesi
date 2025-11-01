@@ -1,5 +1,3 @@
-// app/Http/Controllers/PatientController.php
-
 <?php
 
 namespace App\Http\Controllers;

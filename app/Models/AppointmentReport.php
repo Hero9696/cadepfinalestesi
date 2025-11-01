@@ -1,5 +1,3 @@
-// app/Models/AppointmentReport.php
-
 <?php
 
 namespace App\Models;

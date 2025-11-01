@@ -1,5 +1,3 @@
-// app/Http/Controllers/BranchController.php
-
 <?php
 
 namespace App\Http\Controllers;

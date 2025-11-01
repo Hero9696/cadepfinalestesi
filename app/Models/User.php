@@ -12,7 +12,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     protected $table = 'users';
-    protected $primaryKey = 'id_user';
+    protected $primaryKey = 'id';
 
     // Sobreescribe los timestamps de Laravel
     const CREATED_AT = 'createdate_user';

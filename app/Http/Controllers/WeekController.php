@@ -1,5 +1,3 @@
-// app/Http/Controllers/WeekController.php
-
 <?php
 
 namespace App\Http\Controllers;

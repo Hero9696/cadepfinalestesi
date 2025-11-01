@@ -1,5 +1,3 @@
-// app/Http/Controllers/EmployeeController.php
-
 <?php
 
 namespace App\Http\Controllers;

@@ -1,5 +1,3 @@
-// app/Http/Controllers/ScheduleController.php
-
 <?php
 
 namespace App\Http\Controllers;

@@ -1,5 +1,3 @@
-// app/Models/Department.php
-
 <?php
 
 namespace App\Models;

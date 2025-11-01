@@ -1,5 +1,3 @@
-// app/Models/StructureAppointment.php
-
 <?php
 
 namespace App\Models;

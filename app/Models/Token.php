@@ -1,5 +1,3 @@
-// app/Models/Token.php
-
 <?php
 
 namespace App\Models;

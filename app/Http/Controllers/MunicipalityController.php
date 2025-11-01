@@ -1,5 +1,3 @@
-// app/Http/Controllers/MunicipalityController.php
-
 <?php
 
 namespace App\Http\Controllers;

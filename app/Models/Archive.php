@@ -1,5 +1,3 @@
-// app/Models/Archive.php
-
 <?php
 
 namespace App\Models;

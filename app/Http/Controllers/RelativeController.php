@@ -1,5 +1,3 @@
-// app/Http/Controllers/RelativeController.php
-
 <?php
 
 namespace App\Http\Controllers;

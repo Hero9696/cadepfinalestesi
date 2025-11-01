@@ -1,5 +1,3 @@
-// app/Http/Controllers/DepartmentController.php
-
 <?php
 
 namespace App\Http\Controllers;
