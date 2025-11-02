@@ -72,7 +72,7 @@ const adminNavItems: NavItem[] = [
     },
     {
         title: 'Departamentos',
-        href: dashboard(),
+        href: route('departments.index'),
         icon: Globe,
     },
     {
