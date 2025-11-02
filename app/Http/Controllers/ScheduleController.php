@@ -4,96 +4,133 @@ namespace App\Http\Controllers;
 
 use App\Models\Schedule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class ScheduleController extends Controller
 {
     /**
-     * Muestra una lista de horarios disponibles.
-     * @return \Illuminate\Http\JsonResponse
+     * Muestra la página principal de horarios.
+     * @return \Inertia\Response
      */
     public function index()
     {
         $schedules = Schedule::orderBy('hour_schedule', 'asc')->get();
-        return response()->json($schedules);
+
+        // Renderiza la página de Inertia y le pasa los horarios
+        return Inertia::render('settings/ScheduleIndex', [
+            'schedules' => $schedules,
+        ]);
+    }
+
+    /**
+     * Muestra el formulario para crear un nuevo horario.
+     * @return \Inertia\Response
+     */
+    public function create()
+    {
+        // No se pasa ninguna dependencia (states)
+        return Inertia::render('settings/ScheduleForm');
     }
 
     /**
      * Almacena un nuevo horario.
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'hour_schedule' => 'required|date_format:H:i:s|unique:schedules,hour_schedule',
-            'idupdater_user_schedule' => 'required|integer|exists:users,id_user',
+        $validatedData = $request->validate([
+            // --- CAMPOS ACTUALIZADOS ---
+            'hour_schedule' => 'required|date_format:H:i', // Esperamos HH:MM desde el frontend
+            'date_schedule' => 'required|date',
+
+            // Auditoría
+            'idupdater_user_schedule' => 'required|integer|exists:users,id',
         ]);
 
-        $schedule = Schedule::create([
-            'hour_schedule' => $request->hour_schedule,
-            'idcreate_user_schedule' => $request->idupdater_user_schedule,
-            'idupdater_user_schedule' => $request->idupdater_user_schedule,
-        ]);
+        $dataToCreate = $validatedData;
 
-        return response()->json($schedule, 201);
+        // El input[type="time"] de Vue solo envía HH:MM, así que forzamos a HH:MM:00 para el campo TIME
+        $dataToCreate['hour_schedule'] .= ':00';
+
+        // Auditoría
+        $dataToCreate['idcreate_user_schedule'] = $request->idupdater_user_schedule;
+
+
+        Schedule::create($dataToCreate);
+
+        return redirect()->route('schedules.index')->with('success', 'Horario creado exitosamente.');
     }
 
     /**
      * Muestra un horario específico.
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * @param  \App\Models\Schedule  $schedule
+     * @return \Inertia\Response
      */
-    public function show(int $id)
+    public function show(Schedule $schedule)
     {
-        $schedule = Schedule::find($id);
+        // El método show generalmente se usa para páginas de detalles
+        return Inertia::render('settings/ScheduleShow', [
+            'schedule' => $schedule
+        ]);
+    }
 
-        if (!$schedule) {
-            return response()->json(['message' => 'Schedule not found'], 404);
-        }
-
-        return response()->json($schedule);
+    /**
+     * Muestra el formulario para editar un horario.
+     * @param  \App\Models\Schedule  $schedule
+     * @return \Inertia\Response
+     */
+    public function edit(Schedule $schedule)
+    {
+        return Inertia::render('settings/ScheduleForm', [
+            // Pasamos el horario. El campo hour_schedule vendrá como HH:MM:SS de la DB.
+            'schedule' => $schedule
+        ]);
     }
 
     /**
      * Actualiza un horario específico.
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * @param  \App\Models\Schedule  $schedule
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, int $id)
+    public function update(Request $request, Schedule $schedule)
     {
-        $schedule = Schedule::find($id);
+        // La validación ignora el horario del registro actual al verificar unicidad
+        $validatedData = $request->validate([
+            // --- CAMPOS ACTUALIZADOS ---
+            'hour_schedule' => [
+                'required',
+                'date_format:H:i',
+                Rule::unique('schedules')->ignore($schedule->id_schedule, 'id_schedule'),
+            ],
+            'date_schedule' => 'required|date',
 
-        if (!$schedule) {
-            return response()->json(['message' => 'Schedule not found'], 404);
-        }
-
-        $request->validate([
-            'hour_schedule' => 'sometimes|required|date_format:H:i:s|unique:schedules,hour_schedule,' . $id . ',id_schedule',
-            'idupdater_user_schedule' => 'required|integer|exists:users,id_user',
+            // Auditoría
+            'idupdater_user_schedule' => 'required|integer|exists:users,id',
         ]);
 
-        $schedule->update($request->all());
+        $dataToUpdate = $validatedData;
 
-        return response()->json($schedule);
+        // Aseguramos que los campos de tiempo tengan segundos (si el input solo envía HH:MM)
+        $dataToUpdate['hour_schedule'] .= ':00';
+
+        $schedule->update($dataToUpdate);
+
+        return redirect()->route('schedules.index')->with('success', 'Horario actualizado.');
     }
 
     /**
      * Elimina un horario específico.
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * @param  \App\Models\Schedule  $schedule
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy(int $id)
+    public function destroy(Schedule $schedule)
     {
-        $schedule = Schedule::find($id);
-
-        if (!$schedule) {
-            return response()->json(['message' => 'Schedule not found'], 404);
-        }
-
-        // Se recomienda verificar si hay dependencias activas en structureappointments antes de eliminar.
         $schedule->delete();
 
-        return response()->json(['message' => 'Schedule deleted successfully'], 204);
+        return redirect()->route('schedules.index')->with('success', 'Horario eliminado.');
     }
 }

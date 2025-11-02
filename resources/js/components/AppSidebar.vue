@@ -90,6 +90,11 @@ const adminNavItems: NavItem[] = [
         href: route('areas.index'),
         icon: Briefcase,
     },
+    {
+        title: 'Horarios',
+        href: route('schedules.index'),
+        icon: CalendarCheck,
+    },
     // Añadir rutas de Donadores, Empleados y Citas si son módulos principales
 ];
 

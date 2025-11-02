@@ -13,6 +13,8 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\MunicipalityController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\AreaController;
+use App\Http\Controllers\ScheduleController;
+
 
 
 
@@ -161,9 +163,15 @@ Route::resource('areas', AreaController::class)->names('areas');
 
 });
 
-
-
 /*
+    |--------------------------------------------------------------------------
+    | HORARIOS (SCHEDULES)
+    |--------------------------------------------------------------------------
+    */
+
+Route::resource('schedules', ScheduleController::class)->names('schedules');
+
+/* bf
 |--------------------------------------------------------------------------
 | CONFIGURACIONES EXTERNAS
 |--------------------------------------------------------------------------
