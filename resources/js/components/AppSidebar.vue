@@ -87,7 +87,7 @@ const adminNavItems: NavItem[] = [
     },
     {
         title: 'Áreas Terapia',
-        href: dashboard(),
+        href: route('areas.index'),
         icon: Briefcase,
     },
     // Añadir rutas de Donadores, Empleados y Citas si son módulos principales

@@ -12,6 +12,8 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\MunicipalityController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\AreaController;
+
 
 
 /*
@@ -142,11 +144,20 @@ Route::middleware(['auth'])->group(function () {
 
 /*
     |--------------------------------------------------------------------------
-    | MUNICIPIOS (MUNICIPALITIES)
+    | SUCURSALES (BRANCHES)
     |--------------------------------------------------------------------------
     */
 
 Route::resource('branches', BranchController::class)->names('branches');
+
+
+/*
+    |--------------------------------------------------------------------------
+    | ÁREAS (AREAS)
+    |--------------------------------------------------------------------------
+    */
+
+Route::resource('areas', AreaController::class)->names('areas');
 
 });
 

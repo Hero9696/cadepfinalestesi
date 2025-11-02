@@ -3,105 +3,138 @@
 namespace App\Http\Controllers;
 
 use App\Models\Area;
+// --- ¡AÑADE ESTAS IMPORTACIONES! ---
+use App\Models\State;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Illuminate\Validation\Rule;
+use Illuminate\Database\QueryException; // Para el borrado seguro
 
 class AreaController extends Controller
 {
     /**
-     * Muestra una lista de áreas.
-     * @return \Illuminate\Http\JsonResponse
+     * Muestra la página de índice de áreas.
+     * @return \Inertia\Response
      */
     public function index()
     {
         $areas = Area::with('state')->get();
-        return response()->json($areas);
+
+        return Inertia::render('settings/AreaIndex', [
+            'areas' => $areas
+        ]);
+    }
+
+    /**
+     * Muestra el formulario para crear una nueva área.
+     * @return \Inertia\Response
+     */
+    public function create()
+    {
+        // Pasamos los 'states' para el <select> del formulario
+        return Inertia::render('settings/AreaForm', [
+            'states' => State::all(['id_state', 'name_state'])
+        ]);
     }
 
     /**
      * Almacena una nueva área.
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'name_area' => 'required|string|max:30|unique:areas,name_area',
             'description_area' => 'required|string',
-            'duration_area' => 'nullable|date_format:H:i:s|default:00:30:00',
+            // --- CORRECCIÓN AQUÍ: Se eliminó la regla 'default:...' que no es válida ---
+            'duration_area' => 'nullable|date_format:H:i:s',
             'id_state_area' => 'required|integer|exists:states,id_state',
-            'idupdater_user_area' => 'required|integer|exists:users,id_user',
+            // 'idupdater_user_area' y 'idcreate_user_area' se obtienen de Auth
         ]);
 
-        $area = Area::create([
-            'name_area' => $request->name_area,
-            'description_area' => $request->description_area,
-            'duration_area' => $request->duration_area,
-            'id_state_area' => $request->id_state_area,
-            'idcreate_user_area' => $request->idupdater_user_area,
-            'idupdater_user_area' => $request->idupdater_user_area,
-        ]);
+        // Añadimos los campos de auditoría automáticamente
+        $dataToCreate = $validatedData;
+        $dataToCreate['idcreate_user_area'] = Auth::id();
+        $dataToCreate['idupdater_user_area'] = Auth::id();
 
-        return response()->json($area->load('state'), 201);
+        Area::create($dataToCreate);
+
+        return redirect()->route('areas.index')->with('success', 'Área creada exitosamente.');
     }
 
     /**
-     * Muestra un área específica.
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * Muestra un área específica (opcional, para una página de detalles).
+     * @param  \App\Models\Area  $area
+     * @return \Inertia\Response
      */
-    public function show(int $id)
+    public function show(Area $area)
     {
-        $area = Area::with(['state', 'creator', 'updater'])->find($id);
+        return Inertia::render('settings/AreaShow', [
+            'area' => $area->load(['state', 'creator', 'updater'])
+        ]);
+    }
 
-        if (!$area) {
-            return response()->json(['message' => 'Area not found'], 404);
-        }
-
-        return response()->json($area);
+    /**
+     * Muestra el formulario para editar un área.
+     * @param  \App\Models\Area  $area
+     * @return \Inertia\Response
+     */
+    public function edit(Area $area)
+    {
+        // Pasamos el área específica Y los estados
+        return Inertia::render('settings/AreaForm', [
+            'area' => $area,
+            'states' => State::all(['id_state', 'name_state'])
+        ]);
     }
 
     /**
      * Actualiza un área específica.
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * @param  \App\Models\Area  $area
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, int $id)
+    public function update(Request $request, Area $area)
     {
-        $area = Area::find($id);
-
-        if (!$area) {
-            return response()->json(['message' => 'Area not found'], 404);
-        }
-
-        $request->validate([
-            'name_area' => 'sometimes|required|string|max:30|unique:areas,name_area,' . $id . ',id_area',
+        $validatedData = $request->validate([
+            'name_area' => [
+                'sometimes', 'required', 'string', 'max:30',
+                // Aseguramos que el nombre sea único, ignorando el área actual
+                Rule::unique('areas')->ignore($area->id_area, 'id_area')
+            ],
             'description_area' => 'sometimes|required|string',
             'duration_area' => 'nullable|date_format:H:i:s',
             'id_state_area' => 'sometimes|required|integer|exists:states,id_state',
-            'idupdater_user_area' => 'required|integer|exists:users,id_user',
+            // 'idupdater_user_area' se obtiene de Auth
         ]);
 
-        $area->update($request->all());
+        // Añadimos el campo de auditoría
+        $dataToUpdate = $validatedData;
+        $dataToUpdate['idupdater_user_area'] = Auth::id();
 
-        return response()->json($area->load('state'));
+        $area->update($dataToUpdate);
+
+        // Redirigimos de vuelta al índice
+        return redirect()->route('areas.index')->with('success', 'Área actualizada.');
     }
 
     /**
      * Elimina un área específica.
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * @param  \App\Models\Area  $area
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy(int $id)
+    public function destroy(Area $area)
     {
-        $area = Area::find($id);
-
-        if (!$area) {
-            return response()->json(['message' => 'Area not found'], 404);
+        try {
+            $area->delete();
+        } catch (QueryException $e) {
+            // Captura errores de llave foránea (si el área está en uso)
+            return redirect()->back()->with('error', 'No se puede eliminar el área, tiene registros asociados.');
         }
 
-        $area->delete();
-
-        return response()->json(['message' => 'Area deleted successfully'], 204);
+        return redirect()->route('areas.index')->with('success', 'Área eliminada.');
     }
 }
+
