@@ -20,6 +20,7 @@ class User extends Authenticatable
         'id_state_user',
         'idcreate_user_user',
         'idupdater_user_user',
+        
     ];
 
     protected $hidden = [

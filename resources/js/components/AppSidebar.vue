@@ -10,32 +10,86 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarGroup, // Importamos para agrupar elementos
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { 
+    LayoutGrid, 
+    Settings, 
+    Users, 
+    //Tag, 
+    Flag, 
+    //Home, 
+    Map, 
+    //Calendar, 
+  //  Archive, 
+    Briefcase,
+    Globe, // Para Departamentos/Municipios
+    Building, // Para Sucursales
+    Star, // Para Roles
+} from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
+const route = (window as any).route;
+// --- ELEMENTOS DE NAVEGACIÓN PRINCIPAL ---
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard(),
+        // Aseguramos que el Dashboard se cargue primero sin pestañas específicas
+        href: dashboard(), 
         icon: LayoutGrid,
     },
+    // Nota: Aquí se pueden añadir Pacientes, Empleados, etc., como módulos principales.
 ];
 
+// --- ELEMENTOS DE CONFIGURACIÓN Y ADMINISTRACIÓN ---
+
+const adminNavItems: NavItem[] = [
+    {
+        title: 'Usuarios',
+        // --- ¡CAMBIO PRINCIPAL AQUÍ! ---
+        // Apunta a la nueva ruta 'users.index' que creamos en web.php
+        href: route('users.index'), 
+        icon: Users,
+    },
+    {
+        title: 'Roles',
+        href: route('role.index'),
+        icon: Star,
+    },
+    {
+        title: 'Estados',
+        href: dashboard(),
+        icon: Flag,
+    },
+    {
+        title: 'Departamentos',
+        href: dashboard(),
+        icon: Globe,
+    },
+    {
+        title: 'Municipios',
+        href: dashboard(),
+        icon: Map,
+    },
+    {
+        title: 'Sucursales',
+        href: dashboard(),
+        icon: Building,
+    },
+    {
+        title: 'Áreas Terapia',
+        href: dashboard(),
+        icon: Briefcase,
+    },
+    // Añadir rutas de Donadores, Empleados y Citas si son módulos principales
+];
+
+// --- ELEMENTOS DEL PIE DE PÁGINA (LIMPIOS) ---
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
+    // El pie de página ha sido limpiado según tu solicitud
 ];
 </script>
 
@@ -45,7 +99,7 @@ const footerNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboard()">
+                        <Link :href="dashboard()"> 
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>
@@ -55,10 +109,32 @@ const footerNavItems: NavItem[] = [
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />
+            
+            <SidebarGroup>
+                <template #header>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton size="sm" class="font-semibold text-gray-500 hover:text-gray-700">
+                            <Settings class="h-4 w-4" />
+                            <span>Configuración</span>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </template>
+                
+                <SidebarMenu>
+                    <SidebarMenuItem v-for="item in adminNavItems" :key="item.title">
+                        <SidebarMenuButton size="sm" as-child>
+                            <Link :href="item.href">
+                                <component :is="item.icon" class="h-4 w-4" />
+                                <span>{{ item.title }}</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarGroup>
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
+            <NavFooter :items="footerNavItems" /> 
             <NavUser />
         </SidebarFooter>
     </Sidebar>

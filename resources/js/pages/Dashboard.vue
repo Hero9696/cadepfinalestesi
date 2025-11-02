@@ -1,28 +1,30 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes'; // Asumiendo que aún usas esto para la ruta del dashboard
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import PlaceholderPattern from '../components/PlaceholderPattern.vue';
+import PlaceholderPattern from '@/components/PlaceholderPattern.vue'; // Corregida la ruta
 import { ref, computed, markRaw } from 'vue';
 
 // --- Importación de Módulos Administrativos ---
-// Los componentes DEBEN estar en la carpeta components/
-import RoleIndex from '@/components/Roles/RoleIndex.vue';
-import UserIndex from '@/components/Users/UserIndex.vue'; // <--- AGREGADO
+
+// --- 'UserIndex' ELIMINADO de aquí ---
+
+// @ts-ignore - Ziggy 'route' está disponible globalmente
+const route = (window as any).route; 
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard().url,
+        href: route('dashboard'), // Usando Ziggy para consistencia
     },
 ];
 
-// --- Lógica de Pestañas ---
+// --- Lógica de Pestañas SIMPLIFICADA ---
 const tabs = ref([
     { id: 'dashboard', title: 'Resumen', component: markRaw(PlaceholderPattern) },
-    { id: 'users', title: 'Usuarios', component: markRaw(UserIndex) }, // <--- AGREGADO
-    { id: 'roles', title: 'Roles', component: markRaw(RoleIndex) },
+    // --- Pestaña 'users' ELIMINADA ---
+   
     // Aquí se agregarán States, Departments, etc.
 ]);
 
@@ -68,6 +70,7 @@ const changeTab = (tabId: string) => {
                 </nav>
             </div>
 
+            <!-- El template ahora es más simple -->
             <template v-if="activeTab === 'dashboard'">
                 <div class="grid auto-rows-min gap-4 md:grid-cols-3">
                     <div
