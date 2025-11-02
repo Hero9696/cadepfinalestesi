@@ -10,6 +10,9 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StateController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\MunicipalityController;
+use App\Http\Controllers\BranchController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -127,7 +130,23 @@ Route::middleware(['auth'])->group(function () {
 
     // 6. ELIMINAR (DELETE): Procesa la eliminación de un departamento
     Route::delete('admin/departments/{id}', [DepartmentController::class, 'destroy'])->name('departments.destroy');
-    
+
+
+     /*
+    |--------------------------------------------------------------------------
+    | MUNICIPIOS (MUNICIPALITIES)
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('municipalities', MunicipalityController::class);
+
+
+/*
+    |--------------------------------------------------------------------------
+    | MUNICIPIOS (MUNICIPALITIES)
+    |--------------------------------------------------------------------------
+    */
+
+Route::resource('branches', BranchController::class)->names('branches');
 
 });
 

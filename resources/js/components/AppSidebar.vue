@@ -15,17 +15,17 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { 
-    LayoutGrid, 
-    Settings, 
-    Users, 
-    //Tag, 
-    Flag, 
-    //Home, 
-    Map, 
-    //Calendar, 
+import {
+    LayoutGrid,
+    Settings,
+    Users,
+    //Tag,
+    Flag,
+    //Home,
+    Map,
+    //Calendar,
   //  Archive,
-  CalendarCheck, 
+  CalendarCheck,
     Briefcase,
     Globe, // Para Departamentos/Municipios
     Building, // Para Sucursales
@@ -39,7 +39,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         // Aseguramos que el Dashboard se cargue primero sin pestañas específicas
-        href: dashboard(), 
+        href: dashboard(),
         icon: LayoutGrid,
     },
     // Nota: Aquí se pueden añadir Pacientes, Empleados, etc., como módulos principales.
@@ -52,7 +52,7 @@ const adminNavItems: NavItem[] = [
         title: 'Usuarios',
         // --- ¡CAMBIO PRINCIPAL AQUÍ! ---
         // Apunta a la nueva ruta 'users.index' que creamos en web.php
-        href: route('users.index'), 
+        href: route('users.index'),
         icon: Users,
     },
     {
@@ -77,12 +77,12 @@ const adminNavItems: NavItem[] = [
     },
     {
         title: 'Municipios',
-        href: dashboard(),
+        href: route('municipalities.index'),
         icon: Map,
     },
     {
         title: 'Sucursales',
-        href: dashboard(),
+        href: route('branches.index'),
         icon: Building,
     },
     {
@@ -105,7 +105,7 @@ const footerNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboard()"> 
+                        <Link :href="dashboard()">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>
@@ -115,7 +115,7 @@ const footerNavItems: NavItem[] = [
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />
-            
+
             <SidebarGroup>
                 <template #header>
                     <SidebarMenuItem>
@@ -125,7 +125,7 @@ const footerNavItems: NavItem[] = [
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </template>
-                
+
                 <SidebarMenu>
                     <SidebarMenuItem v-for="item in adminNavItems" :key="item.title">
                         <SidebarMenuButton size="sm" as-child>
@@ -140,7 +140,7 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" /> 
+            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>
