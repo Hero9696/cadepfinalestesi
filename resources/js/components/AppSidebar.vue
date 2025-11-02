@@ -24,7 +24,8 @@ import {
     //Home, 
     Map, 
     //Calendar, 
-  //  Archive, 
+  //  Archive,
+  CalendarCheck, 
     Briefcase,
     Globe, // Para Departamentos/Municipios
     Building, // Para Sucursales
@@ -58,6 +59,11 @@ const adminNavItems: NavItem[] = [
         title: 'Roles',
         href: route('role.index'),
         icon: Star,
+    },
+     {
+        title: 'Citas',
+        href: route('appointments.index'),
+        icon: CalendarCheck,
     },
     {
         title: 'Estados',

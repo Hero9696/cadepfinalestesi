@@ -6,6 +6,7 @@ use Laravel\Fortify\Features;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StateController;
+use App\Http\Controllers\AppointmentController;
 
 // PAGINA DE INICIO
 Route::get('/', function () {
@@ -66,6 +67,18 @@ Route::delete('/roles/{role}', [App\Http\Controllers\RoleController::class, 'des
 // API / JSON (las que usas con axios)
 Route::get('/roles-json', [App\Http\Controllers\RoleController::class, 'index'])->name('role.json');
 Route::get('/roles/{id}/show-json', [App\Http\Controllers\RoleController::class, 'show'])->name('role.show.json');
+
+// Endpoint para que FullCalendar CARGUE eventos (GET)
+// FullCalendar lo espera en un formato JSON específico
+ Route::get('/appointmentsindex', [AppointmentController::class, 'indexPage'])->name('appointments.index');
+ Route::get('/appointments', [AppointmentController::class, 'create'])->name('appointments.create');
+Route::get('/appointments/events', [AppointmentController::class, 'getCalendarEvents'])->name('appointments.events');
+
+// Endpoint para guardar una nueva cita (POST)
+Route::post('/appointments', [AppointmentController::class, 'storeAppointment'])->name('appointments.store');
+
+// Endpoint para actualizar una cita (mover/redimensionar en el calendario) (PUT)
+Route::put('/appointments/{id}', [AppointmentController::class, 'updateAppointment'])->name('appointments.update');
 
 });
 
