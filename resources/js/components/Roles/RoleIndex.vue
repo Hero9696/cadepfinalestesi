@@ -22,7 +22,7 @@ onMounted(() => {
 
 const fetchRoles = async () => {
     try {
-        const response = await axios.get<Role[]>('/api/roles');
+        const response = await axios.get('/roles-json');
         roles.value = response.data;
         closeForm();
     } catch (error) {

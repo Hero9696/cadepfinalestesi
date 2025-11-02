@@ -1,38 +1,43 @@
 <?php
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-
-// ******************************************************
-// ** 1. IMPORTACIONES CORRECTAS **
-// ******************************************************
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StateController;
 
+/*
+|--------------------------------------------------------------------------
+| RUTAS PÚBLICAS (ACCESO LIBRE)
+|--------------------------------------------------------------------------
+| Estas rutas son necesarias para cargar los selectores en el formulario de Registro.
+*/
 
-// ***************************************************************
-// ** 2. RUTA DE DEBUGGING SIMPLE (TEMPORAL) **
-// ***************************************************************
-// Si esta ruta funciona, el problema está en apiResource o el controlador.
-// Si NO funciona, el problema está en la configuración de API o el servidor.
-Route::get('/test', function () {
-    return 'Ruta de prueba API OK.';
-})->withoutMiddleware('auth:sanctum');
-
-// La ruta de roles la dejaremos temporalmente como una función de cierre
-Route::get('/roles', [RoleController::class, 'index'])->withoutMiddleware('auth:sanctum');
-
-// Las rutas API resource las comentamos para aislar el problema
-// Route::apiResource('roles', RoleController::class); 
+// GET /api/states: Cargar estados (Necesario para el registro inicial del usuario).
+Route::get('/states', [StateController::class, 'index'])->withoutMiddleware('auth:sanctum');
 
 
-// ***************************************************************
-// ** 3. RUTAS PROTEGIDAS CON AUTH:SANCTUM **
-// ***************************************************************
+/*
+|--------------------------------------------------------------------------
+| RUTAS PROTEGIDAS (REQUIEREN AUTH:SANCTUM)
+|--------------------------------------------------------------------------
+| CRUD de Usuarios y Roles solo para usuarios logueados.
+*/
 Route::middleware('auth:sanctum')->group(function () {
-    // Rutas para la gestión de Usuarios
+    
+    // 1. RUTAS DE ROLES (GET /api/roles)
+    // Se protege el GET para que solo los administradores logueados puedan ver la lista.
+    Route::get('/roles', [RoleController::class, 'index']); // GET index
+    Route::apiResource('roles', RoleController::class)->only(['store', 'update', 'destroy', 'show']);
+
+    // 2. RUTAS DE USUARIOS (CRUD COMPLETO)
     Route::apiResource('users', UserController::class)->only(['index', 'show', 'store', 'update']);
     Route::put('users/{user}/deactivate', [UserController::class, 'deactivate']);
-
-    // Rutas de soporte (estados)
-    Route::apiResource('states', StateController::class)->only(['index']);
 });
+
+
+/*
+|--------------------------------------------------------------------------
+| NOTA: Si necesitas que /api/roles sea público para el registro (para llenar el select),
+| usa el código que te di anteriormente. Si lo usas dentro de una página autenticada, 
+| esta configuración es la correcta.
+|--------------------------------------------------------------------------
+*/

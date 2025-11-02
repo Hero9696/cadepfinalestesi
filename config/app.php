@@ -3,6 +3,44 @@
 use Illuminate\Support\ServiceProvider; // Necesario para defaultProviders()
 
 return [
+      /*
+    |--------------------------------------------------------------------------
+    | Authentication Guards
+    |--------------------------------------------------------------------------
+    |
+    | Aquí defines los "guards" de autenticación, que definen cómo se autentican
+    | los usuarios para una solicitud dada.
+    |
+    */
+
+    'guards' => [
+        'web' => [
+            'driver' => 'session',
+            'provider' => 'users', // Usa el provider 'users' definido abajo
+        ],
+
+        // EL GUARD NECESARIO PARA RUTAS DE API/SANCTUM:
+        'sanctum' => [
+            'driver' => 'sanctum',
+            'provider' => 'users', // Usa el provider 'users'
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Providers
+    |--------------------------------------------------------------------------
+    |
+    | Define cómo se recuperan los usuarios de tu almacenamiento (base de datos).
+    |
+    */
+
+    'providers' => [
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\User::class, // Debe apuntar a tu modelo User.php
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -87,25 +125,22 @@ return [
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
     |--------------------------------------------------------------------------
-    |
-    | Los service providers listados aquí se cargarán automáticamente. 
-    | Incluimos RouteServiceProvider, que es fundamental para que funcionen las rutas /api.
-    |
     */
 
     'providers' => ServiceProvider::defaultProviders()->merge([
         /*
          * Package Service Providers...
          */
+        \Laravel\Sanctum\SanctumServiceProvider::class, // Ya incluido para resolver el error de Sanctum
 
         /*
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
+        App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
-
-        App\Providers\RouteServiceProvider::class, // <-- CRÍTICO: Necesario para que el prefijo /api funcione
-        // Si usas Fortify o Jetstream, aquí pueden ir otros Service Providers
+        App\Providers\EventServiceProvider::class,
+        App\Providers\RouteServiceProvider::class, 
         App\Providers\FortifyServiceProvider::class,
     ])->toArray(),
 
@@ -113,9 +148,6 @@ return [
     |--------------------------------------------------------------------------
     | Class Aliases
     |--------------------------------------------------------------------------
-    |
-    | Este array de alias de clase se registrará cuando se inicie la aplicación.
-    |
     */
 
     'aliases' => [

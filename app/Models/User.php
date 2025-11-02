@@ -2,25 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens; // Si aún usas Fortify está bien
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasApiTokens, Notifiable;
 
-    protected $table = 'users';
     protected $primaryKey = 'id';
-
-    // Sobreescribe los timestamps de Laravel
-    const CREATED_AT = 'createdate_user';
-    const UPDATED_AT = 'updatedate_user';
 
     protected $fillable = [
         'name',
-        'email', // Si agregaste email a tu tabla
+        'email',
         'password',
         'id_role_user',
         'id_state_user',
@@ -30,35 +24,34 @@ class User extends Authenticatable
 
     protected $hidden = [
         'password',
-        'two_factor_secret',
-        'two_factor_recovery_codes',
         'remember_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            // Usa 'password' ya que renombraste la columna
-            'password' => 'hashed',
-            'email_verified_at' => 'datetime', // Si usas verificación de email
-            'two_factor_confirmed_at' => 'datetime',
-        ];
-    }
+    // ==========================
+    // RELACIONES
+    // ==========================
 
-    // --- Relaciones ---
-
+    // Relación con roles
     public function role()
     {
         return $this->belongsTo(Role::class, 'id_role_user', 'id_role');
     }
 
+    // Relación con estados
     public function state()
     {
         return $this->belongsTo(State::class, 'id_state_user', 'id_state');
     }
 
-    public function employee()
+    // Usuario que creó este registro
+    public function creator()
     {
-        return $this->hasOne(Employee::class, 'id_user_employee', 'id_user');
+        return $this->belongsTo(User::class, 'idcreate_user_user', 'id');
+    }
+
+    // Usuario que actualizó este registro
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'idupdater_user_user', 'id');
     }
 }

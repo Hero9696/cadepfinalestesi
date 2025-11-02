@@ -10,61 +10,60 @@ use Illuminate\Validation\Rule;
 class UserController extends Controller
 {
     /**
-     * Muestra una lista de usuarios con sus roles, estados y empleados asociados.
-     * @return \Illuminate\Http\JsonResponse
+     * GET: Lista todos los usuarios con sus relaciones.
      */
     public function index()
     {
-        $users = User::with(['role', 'state', 'employee:id_employee,firstname_employee,lastname_employee,id_user_employee'])->get();
+        $users = User::with([
+            'role',
+            'state',
+            'creator:id,name',
+            'updater:id,name'
+        ])->get();
+
         return response()->json($users);
     }
 
     /**
-     * Almacena un nuevo usuario.
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * POST: Crear usuario
      */
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:15|unique:users,name',
-            // Si has incluido 'email' en tu DB, agrega: 'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|max:60',
-            'id_role_user' => 'required|integer|exists:roles,id_role',
-            'id_state_user' => 'required|integer|exists:states,id_state',
-            'idupdater_user_user' => 'required|integer|exists:users,id_user',
+            'name'            => 'required|string|max:15|unique:users,name',
+            'email'           => 'nullable|email|unique:users,email',
+            'password'        => 'required|string|min:8|max:60',
+            'id_role_user'    => 'required|integer|exists:roles,id_role',
+            'id_state_user'   => 'required|integer|exists:states,id_state',
+            'idupdater_user_user' => 'required|integer|exists:users,id', // quien creó y actualiza
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email ?? null, // Usar null si no existe el campo en el request
-            'password' => Hash::make($request->password),
-            'id_role_user' => $request->id_role_user,
-            'id_state_user' => $request->id_state_user,
-
-            // Auditoría: El creador y el actualizador inicial son el mismo
+        $newUser = User::create([
+            'name'               => $request->name,
+            'email'              => $request->email,
+            'password'           => Hash::make($request->password),
+            'id_role_user'       => $request->id_role_user,
+            'id_state_user'      => $request->id_state_user,
             'idcreate_user_user' => $request->idupdater_user_user,
-            'idupdater_user_user' => $request->idupdater_user_user,
+            'idupdater_user_user'=> $request->idupdater_user_user,
         ]);
 
-        return response()->json($user->load(['role', 'state']), 201);
+        return response()->json(
+            $newUser->load(['role', 'state']),
+            201
+        );
     }
 
     /**
-     * Muestra un usuario específico, incluyendo detalles del empleado y sus ubicaciones.
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * GET: Mostrar un usuario por ID
      */
-    public function show(int $id)
+    public function show($id)
     {
         $user = User::with([
             'role',
             'state',
-            'employee.area',
-            'employee.branch',
-            // Cargar el creador y el actualizador
-            'creator:id_user,name',
-            'updater:id_user,name'
+            'creator:id,name',
+            'updater:id,name'
         ])->find($id);
 
         if (!$user) {
@@ -75,30 +74,37 @@ class UserController extends Controller
     }
 
     /**
-     * Actualiza un usuario específico.
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * PUT: Actualizar un usuario
      */
-    public function update(Request $request, int $id)
+    public function update(Request $request, $id)
     {
         $user = User::find($id);
 
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
+        if (!$user) return response()->json(['message' => 'User not found'], 404);
 
         $request->validate([
-            'name' => ['sometimes', 'required', 'string', 'max:15', Rule::unique('users', 'name')->ignore($id, 'id_user')],
-            'password' => 'nullable|string|min:8|max:60',
-            'id_role_user' => 'sometimes|required|integer|exists:roles,id_role',
-            'id_state_user' => 'sometimes|required|integer|exists:states,id_state',
-            'idupdater_user_user' => 'required|integer|exists:users,id_user',
+            'name' => [
+                'sometimes', 'required', 'string', 'max:15',
+                Rule::unique('users')->ignore($id)
+            ],
+            'email' => [
+                'nullable', 'email',
+                Rule::unique('users')->ignore($id)
+            ],
+            'password'        => 'nullable|string|min:8|max:60',
+            'id_role_user'    => 'sometimes|required|integer|exists:roles,id_role',
+            'id_state_user'   => 'sometimes|required|integer|exists:states,id_state',
+            'idupdater_user_user' => 'required|integer|exists:users,id'
         ]);
 
-        $data = $request->only(['name', 'id_role_user', 'id_state_user', 'idupdater_user_user']);
+        $data = $request->only([
+            'name',
+            'email',
+            'id_role_user',
+            'id_state_user',
+            'idupdater_user_user'
+        ]);
 
-        // Actualización condicional de contraseña
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
@@ -109,29 +115,32 @@ class UserController extends Controller
     }
 
     /**
-     * Desactiva un usuario específico (Mejora de la seguridad sobre la eliminación).
-     * @param  int  $id
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * PUT: Desactivar usuario (estado = 2 por ejemplo)
      */
-    public function deactivate(int $id, Request $request)
-    {
-        $user = User::find($id);
+   public function deactivate(Request $request, $id)
+{
+    $user = User::find($id);
 
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-
-        $request->validate(['idupdater_user_user' => 'required|integer|exists:users,id_user']);
-
-        // Asumiendo que el estado con ID 2 es 'Inactivo' o 'Desactivado'
-        $INACTIVE_STATE_ID = 2;
-
-        $user->update([
-            'id_state_user' => $INACTIVE_STATE_ID,
-            'idupdater_user_user' => $request->idupdater_user_user
-        ]);
-
-        return response()->json(['message' => 'User deactivated successfully'], 200);
+    if (!$user) {
+        return response()->json(['message' => 'User not found'], 404);
     }
+
+    // 1. Validar tanto el ID del actualizador como el nuevo estado
+    $request->validate([
+        'id_state_user'       => 'required|integer|exists:states,id_state', // Nuevo estado (1 o 2)
+        'idupdater_user_user' => 'required|integer|exists:users,id'
+    ]);
+
+    // Determinar el mensaje para la respuesta
+    $newStateId = $request->id_state_user;
+    $messageAction = ($newStateId == 1) ? 'activated' : 'deactivated';
+
+    // 2. Aplicar la actualización con el estado deseado
+    $user->update([
+        'id_state_user'       => $newStateId, // Lee el nuevo estado del request
+        'idupdater_user_user' => $request->idupdater_user_user
+    ]);
+
+    return response()->json(['message' => "User {$messageAction} successfully"]);
+}
 }

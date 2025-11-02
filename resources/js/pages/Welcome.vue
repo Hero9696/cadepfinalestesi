@@ -10,6 +10,7 @@ import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 import { Form, Head } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+import { register } from '@/routes';
 
 // Propiedades combinadas de ambas vistas
 defineProps<{
@@ -127,6 +128,14 @@ defineProps<{
                     />
                     Inicias Sesión
                 </Button>
+
+                 <div
+                class="text-center text-sm text-muted-foreground"
+                v-if="canRegister"
+            >
+                Don't have an account?
+                <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
+            </div>
             </Form>
 
 

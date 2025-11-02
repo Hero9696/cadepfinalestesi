@@ -4,10 +4,12 @@ import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import PlaceholderPattern from '../components/PlaceholderPattern.vue';
-import { ref, computed, markRaw } from 'vue'; // <--- markRaw AGREGADO
+import { ref, computed, markRaw } from 'vue';
 
 // --- Importación de Módulos Administrativos ---
+// Los componentes DEBEN estar en la carpeta components/
 import RoleIndex from '@/components/Roles/RoleIndex.vue';
+import UserIndex from '@/components/Users/UserIndex.vue'; // <--- AGREGADO
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -16,10 +18,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// --- Lógica de Pestañas (CORREGIDO) ---
+// --- Lógica de Pestañas ---
 const tabs = ref([
-    { id: 'dashboard', title: 'Resumen', component: markRaw(PlaceholderPattern) }, // Usar markRaw
-    { id: 'roles', title: 'Roles', component: markRaw(RoleIndex) },              // USAR markRaw AQUÍ
+    { id: 'dashboard', title: 'Resumen', component: markRaw(PlaceholderPattern) },
+    { id: 'users', title: 'Usuarios', component: markRaw(UserIndex) }, // <--- AGREGADO
+    { id: 'roles', title: 'Roles', component: markRaw(RoleIndex) },
+    // Aquí se agregarán States, Departments, etc.
 ]);
 
 const activeTab = ref('dashboard');
@@ -27,11 +31,11 @@ const activeTab = ref('dashboard');
 const CurrentComponent = computed(() => {
     const tab = tabs.value.find(t => t.id === activeTab.value);
 
-    // Si la pestaña es 'dashboard', usa la lógica de renderizado original
+    // Si la pestaña es 'dashboard', usa el componente original para renderizar los placeholders
     if (tab && tab.id === 'dashboard') {
         return PlaceholderPattern;
     }
-    // No es necesario usar markRaw o shallowRef aquí, ya que el componente ya fue marcado en `tabs`.
+    // Para las pestañas de administración, cargamos el componente Vue
     return tab ? tab.component : null;
 });
 
@@ -39,7 +43,6 @@ const changeTab = (tabId: string) => {
     activeTab.value = tabId;
 };
 </script>
-
 
 <template>
     <Head title="Dashboard" />
