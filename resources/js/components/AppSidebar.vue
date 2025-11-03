@@ -95,6 +95,11 @@ const adminNavItems: NavItem[] = [
         href: route('schedules.index'),
         icon: CalendarCheck,
     },
+    {
+        title: 'Días de la Semana',
+        href: route('week.index'),
+        icon: CalendarCheck,
+    },
     // Añadir rutas de Donadores, Empleados y Citas si son módulos principales
 ];
 

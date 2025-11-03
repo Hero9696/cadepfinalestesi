@@ -14,6 +14,8 @@ use App\Http\Controllers\MunicipalityController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\WeekController;
+
 
 
 
@@ -170,6 +172,14 @@ Route::resource('areas', AreaController::class)->names('areas');
     */
 
 Route::resource('schedules', ScheduleController::class)->names('schedules');
+
+/*
+    |--------------------------------------------------------------------------
+    | SEMANAS (WEEKS)
+    |--------------------------------------------------------------------------
+    */
+
+Route::resource('week', WeekController::class)->names('week');
 
 /* bf
 |--------------------------------------------------------------------------

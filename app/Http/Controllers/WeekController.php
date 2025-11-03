@@ -4,90 +4,97 @@ namespace App\Http\Controllers;
 
 use App\Models\Week;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class WeekController extends Controller
 {
     /**
-     * Muestra una lista de días de la semana.
-     * @return \Illuminate\Http\JsonResponse
+     * Muestra la página de índice de los días de la semana.
+     * @return \Inertia\Response
      */
     public function index()
     {
-        // Ordenar por ID es útil si los IDs están en el orden cronológico de los días (1=Domingo, 2=Lunes, etc.)
+        // Pasamos la lista completa de días de la semana
         $weeks = Week::orderBy('id_week', 'asc')->get();
-        return response()->json($weeks);
+
+        return Inertia::render('settings/WeekIndex', [
+            'weeks' => $weeks,
+        ]);
     }
 
     /**
-     * Almacena un nuevo día de la semana (generalmente solo se usa para la siembra inicial).
+     * Muestra el formulario para crear un nuevo día (solo nombre).
+     * @return \Inertia\Response
+     */
+    public function create()
+    {
+        return Inertia::render('settings/WeekForm');
+    }
+
+    /**
+     * Almacena un nuevo día de la semana.
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'name_week' => 'required|string|max:20|unique:weeks,name_week',
         ]);
 
-        $week = Week::create($request->all());
+        Week::create($validatedData);
 
-        return response()->json($week, 201);
+        return redirect()->route('week.index')->with('success', 'Día de la semana creado exitosamente.');
     }
 
     /**
-     * Muestra un día de la semana específico.
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * Muestra el formulario para editar un día de la semana.
+     * @param  \App\Models\Week  $week
+     * @return \Inertia\Response
      */
-    public function show(int $id)
+    public function edit(Week $week)
     {
-        $week = Week::find($id);
-
-        if (!$week) {
-            return response()->json(['message' => 'Week day not found'], 404);
-        }
-
-        return response()->json($week);
+        // Pasa el objeto Week al formulario
+        return Inertia::render('settings/WeekForm', [
+            'week' => $week,
+        ]);
     }
 
     /**
      * Actualiza un día de la semana específico.
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * @param  \App\Models\Week  $week
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, int $id)
+    public function update(Request $request, Week $week)
     {
-        $week = Week::find($id);
-
-        if (!$week) {
-            return response()->json(['message' => 'Week day not found'], 404);
-        }
-
-        $request->validate([
-            'name_week' => 'sometimes|required|string|max:20|unique:weeks,name_week,' . $id . ',id_week',
+        $validatedData = $request->validate([
+            'name_week' => [
+                'sometimes',
+                'required',
+                'string',
+                'max:20',
+                // Ignora el nombre del registro actual al verificar la unicidad
+                Rule::unique('weeks')->ignore($week->id_week, 'id_week')
+            ],
         ]);
 
-        $week->update($request->all());
+        $week->update($validatedData);
 
-        return response()->json($week);
+        return redirect()->route('week.index')->with('success', 'Día de la semana actualizado.');
     }
 
     /**
-     * Elimina un día de la semana (Usar con extrema precaución, ya que es fundamental para el agendamiento).
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * Elimina un día de la semana específico.
+     * @param  \App\Models\Week  $week
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy(int $id)
+    public function destroy(Week $week)
     {
-        $week = Week::find($id);
-
-        if (!$week) {
-            return response()->json(['message' => 'Week day not found'], 404);
-        }
-
         $week->delete();
 
-        return response()->json(['message' => 'Week day deleted successfully'], 204);
+        return redirect()->route('week.index')->with('success', 'Día de la semana eliminado.');
     }
 }
