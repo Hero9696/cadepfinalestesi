@@ -4,7 +4,8 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens; // Si aún usas Fortify está bien
+use Laravel\Sanctum\HasApiTokens;
+use App\Models\Employee; // <-- ¡IMPORTACIÓN NECESARIA!
 
 class User extends Authenticatable
 {
@@ -20,7 +21,7 @@ class User extends Authenticatable
         'id_state_user',
         'idcreate_user_user',
         'idupdater_user_user',
-        
+
     ];
 
     protected $hidden = [
@@ -31,6 +32,17 @@ class User extends Authenticatable
     // ==========================
     // RELACIONES
     // ==========================
+
+    /**
+     * Define la relación uno a uno (hasOne) con el modelo Employee.
+     * Esto permite saber si el usuario ya está asignado como empleado.
+     */
+    public function employee()
+    {
+        // Clave foránea en la tabla 'employees' es 'id_user_employee',
+        // que apunta a la clave primaria 'id' de la tabla 'users'.
+        return $this->hasOne(Employee::class, 'id_user_employee', 'id');
+    }
 
     // Relación con roles
     public function role()

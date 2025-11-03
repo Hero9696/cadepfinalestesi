@@ -3,120 +3,180 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\Area;
+use App\Models\Branch;
+use App\Models\Department;
+use App\Models\Municipality;
+use App\Models\State;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class EmployeeController extends Controller
 {
-    /**
-     * Muestra una lista de empleados con sus relaciones clave.
-     * @return \Illuminate\Http\JsonResponse
-     */
+    /** Página principal */
     public function index()
     {
         $employees = Employee::with(['user', 'area', 'branch', 'state'])->get();
-        return response()->json($employees);
+
+        return Inertia::render('settings/EmployeeIndex', [
+            'employees' => $employees,
+        ]);
     }
 
-    /**
-     * Almacena un nuevo empleado.
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+    /** Crear empleado */
+    public function create()
+    {
+        return Inertia::render('settings/EmployeeForm', [
+            // Usuarios disponibles para asignar
+            'users' => User::whereDoesntHave('employee')
+                ->get(['id', 'name']),
+
+            'areas' => Area::all(['id_area', 'name_area']),
+            'branches' => Branch::all(['id_branch', 'name_branch']),
+            'states' => State::all(['id_state', 'name_state']),
+            'departments' => Department::all(['id_department', 'name_department']),
+            'municipalities' => Municipality::all([
+                'id_municipality',
+                'name_municipality',
+                'id_department_municipality'
+            ]),
+        ]);
+    }
+
+    /** Guardar empleado */
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'cui_employee' => 'nullable|string|max:15|unique:employees,cui_employee',
             'firstname_employee' => 'required|string|max:30',
-            // ... (otras validaciones de nombres y datos personales)
-            'profession_employee' => 'required|string',
+            'middlename_employee' => 'nullable|string|max:30',
+            'thirdname_employee' => 'nullable|string|max:30',
+            'lastname_employee' => 'required|string|max:30',
+            'secondlastname_employee' => 'nullable|string|max:30',
+            'thirdlastname_employee' => 'nullable|string|max:30',
+            'profession_employee' => 'required|string|max:50',
             'phone_employee' => 'required|string|max:25',
-            'id_user_employee' => 'required|integer|exists:users,id_user|unique:employees,id_user_employee', // Asegurar 1:1 con users
+
+            'id_user_employee' => 'required|integer|exists:users,id|unique:employees,id_user_employee',
+
             'birthdate_employee' => 'required|date',
             'idbirth_department_employee' => 'required|integer|exists:departments,id_department',
             'idbirth_municipality_employee' => 'required|integer|exists:municipalities,id_municipality',
+
             'age_employee' => 'required|integer|max:150',
             'id_department_employee' => 'required|integer|exists:departments,id_department',
             'id_municipality_employee' => 'required|integer|exists:municipalities,id_municipality',
+
             'address_employee' => 'required|string|max:255',
-            'gender_employee' => 'required|in:Masculino,Femenino,Otro',
+            'gender_employee' => 'required|string',
             'maritalstatus_employee' => 'required|string|max:20',
+
             'id_area_employee' => 'required|integer|exists:areas,id_area',
             'id_branch_employee' => 'required|integer|exists:branches,id_branch',
             'id_state_employee' => 'required|integer|exists:states,id_state',
-            'idupdater_user_employee' => 'required|integer|exists:users,id_user',
+
+            'idupdater_user_employee' => 'required|integer|exists:users,id',
         ]);
 
-        $employee = Employee::create([
-            ...$request->except(['idcreate_user_employee']),
-            'idcreate_user_employee' => $request->idupdater_user_employee,
-        ]);
+        $validatedData['idcreate_user_employee'] = $validatedData['idupdater_user_employee'];
 
-        return response()->json($employee->load(['user', 'area']), 201);
+        Employee::create($validatedData);
+
+        return redirect()->route('employees.index')
+            ->with('success', 'Empleado creado con éxito.');
     }
 
-    /**
-     * Muestra un empleado específico.
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function show(int $id)
+  public function edit(Employee $employee)
+{
+    $employee->load([
+        'birthDepartment',
+        'birthMunicipality',
+        'locationDepartment',
+        'locationMunicipality'
+    ]);
+
+    return Inertia::render('settings/EmployeeForm', [
+        'employee' => $employee,
+
+        'users' => User::select([
+                'id as id_user',
+                'name as user_name'
+            ])->get(),
+
+        'areas' => Area::all(['id_area', 'name_area']),
+        'branches' => Branch::all(['id_branch', 'name_branch']),
+        'states' => State::all(['id_state', 'name_state']),
+        'departments' => Department::all(['id_department', 'name_department']),
+        'municipalities' => Municipality::all([
+            'id_municipality',
+            'name_municipality',
+            'id_department_municipality'
+        ]),
+    ]);
+}
+
+
+    /** Actualizar empleado */
+    public function update(Request $request, Employee $employee)
     {
-        $employee = Employee::with([
-            'user', 'area', 'branch', 'state',
-            'birthDepartment', 'birthMunicipality',
-            'locationDepartment', 'locationMunicipality'
-        ])->find($id);
+        $validatedData = $request->validate([
+            'cui_employee' => [
+                'nullable',
+                'string',
+                'max:15',
+                Rule::unique('employees', 'cui_employee')->ignore($employee->id_employee, 'id_employee')
+            ],
 
-        if (!$employee) {
-            return response()->json(['message' => 'Employee not found'], 404);
-        }
+            'firstname_employee' => 'sometimes|required|string|max:30',
+            'middlename_employee' => 'nullable|string|max:30',
+            'thirdname_employee' => 'nullable|string|max:30',
 
-        return response()->json($employee);
-    }
+            'lastname_employee' => 'sometimes|required|string|max:30',
+            'secondlastname_employee' => 'nullable|string|max:30',
+            'thirdlastname_employee' => 'nullable|string|max:30',
 
-    /**
-     * Actualiza un empleado específico.
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function update(Request $request, int $id)
-    {
-        $employee = Employee::find($id);
+            'profession_employee' => 'sometimes|required|string|max:50',
+            'phone_employee' => 'sometimes|required|string|max:25',
 
-        if (!$employee) {
-            return response()->json(['message' => 'Employee not found'], 404);
-        }
+            'id_user_employee' => [
+                'sometimes',
+                'required',
+                'integer',
+                Rule::unique('employees', 'id_user_employee')->ignore($employee->id_employee, 'id_employee')
+            ],
 
-        $request->validate([
-            'cui_employee' => ['nullable', 'string', 'max:15', Rule::unique('employees', 'cui_employee')->ignore($id, 'id_employee')],
-            'id_user_employee' => ['sometimes', 'required', 'integer', Rule::unique('employees', 'id_user_employee')->ignore($id, 'id_employee')],
+            'birthdate_employee' => 'sometimes|required|date',
+            'idbirth_department_employee' => 'sometimes|required|integer|exists:departments,id_department',
+            'idbirth_municipality_employee' => 'sometimes|required|integer|exists:municipalities,id_municipality',
+
+            'age_employee' => 'sometimes|required|integer|max:150',
+            'id_department_employee' => 'sometimes|required|integer|exists:departments,id_department',
+            'id_municipality_employee' => 'sometimes|required|integer|exists:municipalities,id_municipality',
+
+            'address_employee' => 'sometimes|required|string|max:255',
+            'gender_employee' => 'sometimes|required|string',
+            'maritalstatus_employee' => 'sometimes|required|string|max:20',
+
             'id_area_employee' => 'sometimes|required|integer|exists:areas,id_area',
-            // ... (otras validaciones 'sometimes|required')
-            'idupdater_user_employee' => 'required|integer|exists:users,id_user',
+            'id_branch_employee' => 'sometimes|required|integer|exists:branches,id_branch',
+            'id_state_employee' => 'sometimes|required|integer|exists:states,id_state',
+
+            'idupdater_user_employee' => 'required|integer|exists:users,id',
         ]);
 
-        $employee->update($request->all());
+        $employee->update($validatedData);
 
-        return response()->json($employee);
+        return redirect()->back()->with('success', 'Empleado actualizado con éxito.');
     }
 
-    /**
-     * Elimina un empleado específico (Usar cambio de estado es preferible).
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function destroy(int $id)
+    /** Eliminar empleado */
+    public function destroy(Employee $employee)
     {
-        $employee = Employee::find($id);
-
-        if (!$employee) {
-            return response()->json(['message' => 'Employee not found'], 404);
-        }
-
         $employee->delete();
 
-        return response()->json(['message' => 'Employee deleted successfully'], 204);
+        return redirect()->route('employees.index')
+            ->with('success', 'Empleado eliminado con éxito.');
     }
 }

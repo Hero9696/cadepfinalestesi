@@ -15,6 +15,8 @@ use App\Http\Controllers\BranchController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\WeekController;
+use App\Http\Controllers\EmployeeController;
+
 
 
 
@@ -180,6 +182,14 @@ Route::resource('schedules', ScheduleController::class)->names('schedules');
     */
 
 Route::resource('week', WeekController::class)->names('week');
+
+/*
+    |--------------------------------------------------------------------------
+    | EMPLEADOS (EMPLOYEES)
+    |--------------------------------------------------------------------------
+    */
+
+Route::resource('employees', EmployeeController::class)->names('employees');
 
 /* bf
 |--------------------------------------------------------------------------

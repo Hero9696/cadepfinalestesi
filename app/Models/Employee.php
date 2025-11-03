@@ -46,12 +46,36 @@ class Employee extends Model
         'birthdate_employee' => 'date',
     ];
 
+    // ==========================
+    // RELACIONES
+    // ==========================
+
     /**
      * Relación: Un empleado está asociado a una cuenta de usuario.
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'id_user_employee', 'id_user');
+        // CORRECCIÓN: La clave local en 'users' debe ser 'id' (su clave primaria), no 'id_user'.
+        // Esto resuelve el error "Unknown column 'users.id_user'".
+        return $this->belongsTo(User::class, 'id_user_employee', 'id');
+    }
+
+    /**
+     * Relación: Usuario que creó este registro.
+     */
+    public function creator()
+    {
+        // Añadimos esta relación para auditoría
+        return $this->belongsTo(User::class, 'idcreate_user_employee', 'id');
+    }
+
+    /**
+     * Relación: Usuario que actualizó este registro.
+     */
+    public function updater()
+    {
+        // Añadimos esta relación para auditoría
+        return $this->belongsTo(User::class, 'idupdater_user_employee', 'id');
     }
 
     /**

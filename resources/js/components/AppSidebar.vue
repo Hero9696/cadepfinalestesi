@@ -100,6 +100,11 @@ const adminNavItems: NavItem[] = [
         href: route('week.index'),
         icon: CalendarCheck,
     },
+    {
+        title: 'Empleados',
+        href: route('employees.index'),
+        icon: Briefcase,
+    },
     // Añadir rutas de Donadores, Empleados y Citas si son módulos principales
 ];
 
