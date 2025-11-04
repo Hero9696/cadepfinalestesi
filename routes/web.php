@@ -16,6 +16,8 @@ use App\Http\Controllers\AreaController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\WeekController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\PatientController;
+
 
 
 
@@ -190,6 +192,15 @@ Route::resource('week', WeekController::class)->names('week');
     */
 
 Route::resource('employees', EmployeeController::class)->names('employees');
+
+/*
+    |--------------------------------------------------------------------------
+    | PACIENTES (PATIENTS)
+    |--------------------------------------------------------------------------
+    */
+
+
+Route::resource('/patients', PatientController::class)->names('patients');
 
 /* bf
 |--------------------------------------------------------------------------

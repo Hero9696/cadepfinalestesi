@@ -105,6 +105,11 @@ const adminNavItems: NavItem[] = [
         href: route('employees.index'),
         icon: Briefcase,
     },
+    {
+        title: 'Pacientes',
+        href: route('patients.index'),
+        icon: Users,
+    },
     // Añadir rutas de Donadores, Empleados y Citas si son módulos principales
 ];
 
