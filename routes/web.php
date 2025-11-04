@@ -17,6 +17,7 @@ use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\WeekController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\RelativeController;
 
 
 
@@ -200,7 +201,15 @@ Route::resource('employees', EmployeeController::class)->names('employees');
     */
 
 
-Route::resource('/patients', PatientController::class)->names('patients');
+Route::resource('patients', PatientController::class)->names('patients');
+
+/*
+    |--------------------------------------------------------------------------
+    | PARENTESCOS (RELATIVES)
+    |--------------------------------------------------------------------------
+    */
+
+Route::resource('relatives', RelativeController::class)->names('relatives');
 
 /* bf
 |--------------------------------------------------------------------------
