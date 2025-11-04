@@ -18,7 +18,7 @@ use App\Http\Controllers\WeekController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\RelativeController;
-
+use App\Http\Controllers\DonorController;
 
 
 
@@ -210,6 +210,14 @@ Route::resource('patients', PatientController::class)->names('patients');
     */
 
 Route::resource('relatives', RelativeController::class)->names('relatives');
+
+/*
+    |--------------------------------------------------------------------------
+    | DONANTES (DONORS)
+    |--------------------------------------------------------------------------
+    */
+
+Route::resource('/donors', DonorController::class)->names('donors');
 
 /* bf
 |--------------------------------------------------------------------------

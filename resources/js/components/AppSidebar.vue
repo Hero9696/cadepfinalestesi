@@ -114,7 +114,13 @@ const adminNavItems: NavItem[] = [
         title: 'Parentescos',
         href: route('relatives.index'),
         icon: Users,
-    }
+    },
+    {
+        title: 'Donantes',
+        href: route('donors.index'),
+        icon: Star,
+    },
+
     // Añadir rutas de Donadores, Empleados y Citas si son módulos principales
 ];
 
