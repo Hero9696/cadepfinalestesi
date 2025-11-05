@@ -120,6 +120,11 @@ const adminNavItems: NavItem[] = [
         href: route('donors.index'),
         icon: Star,
     },
+    {
+        title: 'Donaciones',
+        href: route('donations.index'),
+        icon: Star,
+    },
 
     // Añadir rutas de Donadores, Empleados y Citas si son módulos principales
 ];

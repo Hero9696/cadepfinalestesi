@@ -19,6 +19,9 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\RelativeController;
 use App\Http\Controllers\DonorController;
+use App\Http\Controllers\DonationController;
+
+
 
 
 
@@ -218,6 +221,14 @@ Route::resource('relatives', RelativeController::class)->names('relatives');
     */
 
 Route::resource('/donors', DonorController::class)->names('donors');
+
+/*
+    |--------------------------------------------------------------------------
+    | DONACIONES (DONATIONS)
+    |--------------------------------------------------------------------------
+    */
+
+Route::resource('donations', DonationController::class)->names('donations');
 
 /* bf
 |--------------------------------------------------------------------------
