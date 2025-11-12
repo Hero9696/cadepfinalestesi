@@ -11,7 +11,7 @@ class Relative extends Model
 
     protected $table = 'relatives';
     protected $primaryKey = 'id_relative';
-    
+    // Sobreescribir las columnas de timestamps
     const CREATED_AT = 'createdate_relative';
     const UPDATED_AT = 'updatedate_relative';
 
@@ -24,8 +24,7 @@ class Relative extends Model
     ];
 
     /**
-     * RELACIÓN: Obtiene el paciente principal.
-     * Esta es la función que sigue la línea de la imagen.
+     * Relación: Paciente principal de la relación.
      */
     public function principalPatient()
     {
@@ -33,8 +32,7 @@ class Relative extends Model
     }
 
     /**
-     * RELACIÓN: Obtiene el paciente secundario (relacionado).
-     * Esta es la función que sigue la segunda línea de la imagen.
+     * Relación: Paciente secundario (el pariente) de la relación.
      */
     public function secondaryPatient()
     {

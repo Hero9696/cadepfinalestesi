@@ -17,10 +17,13 @@ use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\WeekController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PatientController;
+<<<<<<< HEAD
 use App\Http\Controllers\RelativeController;
 use App\Http\Controllers\DonorController;
 use App\Http\Controllers\DonationController;
 
+=======
+>>>>>>> parent of 6025cb8 (relative ready)
 
 
 
@@ -206,15 +209,7 @@ Route::resource('employees', EmployeeController::class)->names('employees');
     */
 
 
-Route::resource('patients', PatientController::class)->names('patients');
-
-/*
-    |--------------------------------------------------------------------------
-    | PARENTESCOS (RELATIVES)
-    |--------------------------------------------------------------------------
-    */
-
-Route::resource('relatives', RelativeController::class)->names('relatives');
+Route::resource('/patients', PatientController::class)->names('patients');
 
 /*
     |--------------------------------------------------------------------------

@@ -3,156 +3,112 @@
 namespace App\Http\Controllers;
 
 use App\Models\Relative;
-use App\Models\Patient; 
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
 class RelativeController extends Controller
 {
     /**
-     * Función helper para obtener el nombre completo y limpio de un objeto Patient.
-     */
-    protected function getFullName(Patient $patient): string
-    {
-        $names = array_filter([
-            $patient->firstname_patient, 
-            $patient->middlename_patient, 
-            $patient->thirdname_patient
-        ]);
-        $lastnames = array_filter([
-            $patient->lastname_patient, 
-            $patient->secondlastname_patient, 
-            $patient->thirdlastname_patient
-        ]);
-        $fullName = implode(' ', $names) . ' ' . implode(' ', $lastnames);
-        return trim($fullName);
-    }
-    
-    /**
-     * Función helper para generar las opciones de paciente para los selects.
-     */
-    protected function getPatientOptions()
-    {
-        $patientColumns = [
-            'id_patient', 'firstname_patient', 'middlename_patient', 'thirdname_patient', 
-            'lastname_patient', 'secondlastname_patient', 'thirdlastname_patient'
-        ];
-
-        return Patient::select($patientColumns)
-            ->get()
-            ->map(function ($patient) {
-                return [
-                    'id' => $patient->id_patient,
-                    'name' => $this->getFullName($patient), 
-                ];
-            });
-    }
-
-    /**
      * Muestra una lista de relaciones de parentesco.
-     * *** LÓGICA CORREGIDA ***
-     * Implementamos la misma lógica del 'RelativeForm' para evitar fallos de '::with()'.
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index()
     {
-        // 1. Columnas que necesitamos para construir el nombre
-        $patientColumns = [
-            'id_patient', 'firstname_patient', 'middlename_patient', 'thirdname_patient', 
-            'lastname_patient', 'secondlastname_patient', 'thirdlastname_patient'
-        ];
-
-        // 2. Obtenemos un "diccionario" de pacientes (ID => Objeto Paciente)
-        // Usamos keyBy('id_patient') para que la búsqueda sea instantánea
-        $patientMap = Patient::select($patientColumns)->get()->keyBy('id_patient');
-
-        // 3. Obtenemos todas las relaciones (esta vez sin '::with()')
-        $relativesData = Relative::get();
-
-        // 4. Mapeamos (recorremos) las relaciones y adjuntamos los pacientes manualmente
-        $relatives = $relativesData->map(function ($relative) use ($patientMap) {
-            
-            // Buscamos el ID principal en el mapa y lo asignamos a la propiedad 'principalPatient'
-            $relative->principalPatient = $patientMap->get($relative->idprincipal_patient_relative);
-            
-            // Buscamos el ID secundario en el mapa y lo asignamos a la propiedad 'secondaryPatient'
-            $relative->secondaryPatient = $patientMap->get($relative->idsecondary_patient_relative);
-            
-            return $relative;
-        });
-
-        // 5. Enviamos a Inertia
-        return Inertia::render('settings/RelativeIndex', [
-            'relatives' => $relatives,
-        ]);
+        $relatives = Relative::with(['principalPatient', 'secondaryPatient'])->get();
+        return response()->json($relatives);
     }
-    
-    public function create()
-    {
-        return Inertia::render('settings/RelativeForm', [
-            'patients' => $this->getPatientOptions(),
-        ]);
-    }
-    
+
+    /**
+     * Almacena una nueva relación de parentesco.
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
+        $request->validate([
             'idprincipal_patient_relative' => 'required|integer|exists:patients,id_patient|different:idsecondary_patient_relative',
             'idsecondary_patient_relative' => 'required|integer|exists:patients,id_patient',
             'relationship_relative' => 'nullable|string|max:30',
-            'idupdater_user_relative' => 'required|integer|exists:users,id',
+            'idupdater_user_relative' => 'required|integer|exists:users,id_user',
         ]);
 
-        $exists = Relative::where(function ($query) use ($validatedData) {
-            $query->where('idprincipal_patient_relative', $validatedData['idprincipal_patient_relative'])
-                  ->where('idsecondary_patient_relative', $validatedData['idsecondary_patient_relative']);
-        })->orWhere(function ($query) use ($validatedData) {
-            $query->where('idprincipal_patient_relative', $validatedData['idsecondary_patient_relative'])
-                  ->where('idsecondary_patient_relative', $validatedData['idprincipal_patient_relative']);
+        // Evitar duplicados (ejemplo: A es padre de B, evitar registrar B es hijo de A si ya existe A-B)
+        $exists = Relative::where(function ($query) use ($request) {
+            $query->where('idprincipal_patient_relative', $request->idprincipal_patient_relative)
+                  ->where('idsecondary_patient_relative', $request->idsecondary_patient_relative);
+        })->orWhere(function ($query) use ($request) {
+            // Revisa la relación inversa para evitar redundancia
+            $query->where('idprincipal_patient_relative', $request->idsecondary_patient_relative)
+                  ->where('idsecondary_patient_relative', $request->idprincipal_patient_relative);
         })->exists();
 
         if ($exists) {
-            return back()->withErrors([
-                'idprincipal_patient_relative' => 'La relación o su inversa ya existe entre estos pacientes.'
-            ])->withInput();
+            return response()->json(['message' => 'The relationship or its inverse already exists.'], 409);
         }
 
-        Relative::create([
-            'idprincipal_patient_relative' => $validatedData['idprincipal_patient_relative'],
-            'idsecondary_patient_relative' => $validatedData['idsecondary_patient_relative'],
-            'relationship_relative' => $validatedData['relationship_relative'],
-            'idcreate_user_relative' => $validatedData['idupdater_user_relative'],
-            'idupdater_user_relative' => $validatedData['idupdater_user_relative'],
+        $relative = Relative::create([
+            ...$request->except(['idcreate_user_relative']),
+            'idcreate_user_relative' => $request->idupdater_user_relative,
         ]);
 
-        return redirect()->route('relatives.index')->with('success', 'Relación de parentesco creada exitosamente.');
+        return response()->json($relative, 201);
     }
 
-    public function edit(Relative $relative)
+    /**
+     * Muestra una relación de parentesco específica.
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(int $id)
     {
-        return Inertia::render('settings/RelativeForm', [
-            'relative' => $relative,
-            'patients' => $this->getPatientOptions(),
-        ]);
+        $relative = Relative::with(['principalPatient', 'secondaryPatient'])->find($id);
+
+        if (!$relative) {
+            return response()->json(['message' => 'Relative relationship not found'], 404);
+        }
+
+        return response()->json($relative);
     }
 
-    public function update(Request $request, Relative $relative)
+    /**
+     * Actualiza una relación de parentesco específica.
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(Request $request, int $id)
     {
-        $validatedData = $request->validate([
+        $relative = Relative::find($id);
+
+        if (!$relative) {
+            return response()->json(['message' => 'Relative relationship not found'], 404);
+        }
+
+        $request->validate([
             'relationship_relative' => 'sometimes|nullable|string|max:30',
-            'idupdater_user_relative' => 'required|integer|exists:users,id',
+            'idupdater_user_relative' => 'required|integer|exists:users,id_user',
+            // Los IDs de paciente principal y secundario generalmente no deberían cambiar
         ]);
 
-        $relative->update($validatedData);
-        return redirect()->route('relatives.index')->with('success', 'Relación de parentesco actualizada exitosamente.');
+        $relative->update($request->all());
+
+        return response()->json($relative);
     }
 
-    public function destroy(Relative $relative)
+    /**
+     * Elimina una relación de parentesco específica.
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy(int $id)
     {
-        try {
-            $relative->delete();
-            return redirect()->route('relatives.index')->with('success', 'Relación eliminada correctamente.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'No se pudo eliminar la relación. Puede estar siendo utilizada en otro registro.');
+        $relative = Relative::find($id);
+
+        if (!$relative) {
+            return response()->json(['message' => 'Relative relationship not found'], 404);
         }
+
+        $relative->delete();
+
+        return response()->json(['message' => 'Relative relationship deleted successfully'], 204);
     }
 }
