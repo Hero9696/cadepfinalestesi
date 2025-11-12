@@ -112,14 +112,16 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    // Páginas
+    Route::resource('appointments', AppointmentController::class);
+
+    // // Páginas
     Route::get('/appointmentsindex', [AppointmentController::class, 'indexPage'])->name('appointments.index');
     Route::get('/appointments', [AppointmentController::class, 'create'])->name('appointments.create');
 
-    // API
-    Route::get('/appointments/events', [AppointmentController::class, 'getCalendarEvents'])->name('appointments.events');
-    Route::post('/appointments', [AppointmentController::class, 'storeAppointment'])->name('appointments.store');
-    Route::put('/appointments/{id}', [AppointmentController::class, 'updateAppointment'])->name('appointments.update');
+    // // API
+    // Route::get('/appointments/events', [AppointmentController::class, 'getCalendarEvents'])->name('appointments.events');
+    // Route::post('/appointments', [AppointmentController::class, 'storeAppointment'])->name('appointments.store');
+    // Route::put('/appointments/{id}', [AppointmentController::class, 'updateAppointment'])->name('appointments.update');
 
     /*
     |--------------------------------------------------------------------------
