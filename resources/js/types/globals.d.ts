@@ -24,3 +24,17 @@ declare module 'vue' {
         $headManager: ReturnType<typeof createHeadManager>;
     }
 }
+declare global {
+  interface PageProps extends InertiaPageProps {
+    auth?: {
+      user: {
+        id: number;
+        name: string;
+        email: string;
+        id_role_user: number;
+        id_state_user: number;
+      } | null;
+    };
+    // coloca aquí otras props globales
+  }
+}
