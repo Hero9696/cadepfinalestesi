@@ -39,7 +39,7 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
 /*
 |--------------------------------------------------------------------------
 | DASHBOARD
@@ -65,7 +65,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Páginas (Inertia)
     Route::get('/users', [UserController::class, 'indexPage'])->name('users.index');
-    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
 
     // API / JSON / Acciones
