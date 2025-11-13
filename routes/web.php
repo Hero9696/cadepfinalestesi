@@ -17,13 +17,9 @@ use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\WeekController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PatientController;
-<<<<<<< HEAD
-use App\Http\Controllers\RelativeController;
 use App\Http\Controllers\DonorController;
 use App\Http\Controllers\DonationController;
 
-=======
->>>>>>> parent of 6025cb8 (relative ready)
 
 
 
@@ -42,7 +38,7 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
 /*
 |--------------------------------------------------------------------------
 | DASHBOARD
@@ -68,7 +64,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Páginas (Inertia)
     Route::get('/users', [UserController::class, 'indexPage'])->name('users.index');
-    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
 
     // API / JSON / Acciones
