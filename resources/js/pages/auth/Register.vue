@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'; // Nuevo: para lógica asíncrona
-import axios, { type AxiosError } from 'axios'; // Nuevo: para peticiones API
+// Nuevo: para peticiones API
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -13,51 +12,16 @@ import { Form, Head } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
 
 // --- INTERFACES DE DATOS ---
-interface SelectOption {
-    id_role?: number;
-    id_state?: number;
-    name_role?: string;
-    name_state?: string;
-}
 
-// --- ESTADO LOCAL ---
-const roles = ref<Partial<SelectOption>[]>([]);
-const states = ref<Partial<SelectOption>[]>([]);
+
 
 // Obtiene el formulario de Fortify/Inertia.
 // CORRECCIÓN: Se usa un casting (as Record<string, any>) para permitir
 // las propiedades personalizadas (id_role_user, id_state_user) que faltan en la definición de tipo de Fortify.
-const form = store.form() as Record<string, any>; 
+const form = store.form() as Record<string, any>;
 
 // --- LÓGICA DE CARGA DE DEPENDENCIAS ---
-onMounted(() => {
-    fetchDependencies();
-});
 
-const fetchDependencies = async () => {
-    try {
-        const [rolesResponse, statesResponse] = await Promise.all([
-            axios.get<Partial<SelectOption>[]>('/api/roles'),
-            axios.get<Partial<SelectOption>[]>('/api/states')
-        ]);
-
-        roles.value = rolesResponse.data;
-        states.value = statesResponse.data;
-
-        // Inicializar el formulario con el primer valor si existen datos
-        if (roles.value.length > 0 && !form.id_role_user) {
-            form.id_role_user = roles.value[0].id_role;
-        }
-        if (states.value.length > 0 && !form.id_state_user) {
-            form.id_state_user = states.value[0].id_state;
-        }
-
-    } catch (error) {
-        const axiosError = error as AxiosError;
-        console.error('Error al cargar Roles/Estados (posible 401 o 404):', axiosError.response?.statusText || axiosError.message);
-        // Si el error es 401 o 404, la aplicación no debe usarse hasta que las rutas API estén disponibles
-    }
-};
 
 </script>
 
@@ -107,43 +71,10 @@ const fetchDependencies = async () => {
                 </div>
 
                 <!-- 3. ROL (NUEVO CAMPO REQUERIDO) -->
-                <div class="grid gap-2">
-                    <Label for="id_role_user">Rol del Usuario</Label>
-                    <!-- Usamos v-model y name para Inertia -->
-                    <select
-                        id="id_role_user"
-                        v-model="form.id_role_user"
-                        name="id_role_user"
-                        required
-                        :tabindex="3"
-                        class="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        <option value="" disabled>Seleccione un Rol</option>
-                        <option v-for="role in roles" :key="role.id_role" :value="role.id_role">
-                            {{ role.name_role }}
-                        </option>
-                    </select>
-                    <InputError :message="errors.id_role_user" />
-                </div>
+
 
                 <!-- 4. ESTADO (NUEVO CAMPO REQUERIDO) -->
-                <div class="grid gap-2">
-                    <Label for="id_state_user">Estado Inicial</Label>
-                    <select
-                        id="id_state_user"
-                        v-model="form.id_state_user"
-                        name="id_state_user"
-                        required
-                        :tabindex="4"
-                        class="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        <option value="" disabled>Seleccione un Estado</option>
-                        <option v-for="state in states" :key="state.id_state" :value="state.id_state">
-                            {{ state.name_state }}
-                        </option>
-                    </select>
-                    <InputError :message="errors.id_state_user" />
-                </div>
+
 
 
                 <!-- 5. PASSWORD -->

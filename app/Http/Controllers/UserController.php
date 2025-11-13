@@ -21,8 +21,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::with([
-            'role',
-            'state',
+
             'creator:id,name',
             'updater:id,name'
         ])->get();
@@ -39,8 +38,8 @@ class UserController extends Controller
         // El string 'Settings/Users/UserForm' debe coincidir EXACTAMENTE
         // con la ruta del archivo en 'resources/js/pages/'
         return Inertia::render('settings/UserForm', [
-            'roles' => Role::all(['id_role as value', 'name_role as label']), // Pasa los roles para un <select>
-            'states' => State::all(['id_state as value', 'name_state as label']), // Pasa los estados para un <select>
+            // 'roles' => Role::all(['id_role as value', 'name_role as label']), // Pasa los roles para un <select>
+            // 'states' => State::all(['id_state as value', 'name_state as label']), // Pasa los estados para un <select>
         ]);
     }
 
@@ -50,50 +49,21 @@ class UserController extends Controller
      * que redirija con Inertia en lugar de devolver JSON.
      */
    public function store(Request $request)
-    {
-        // --- 1. VALIDACIÓN (Modo "Crear") ---
-        $validatedData = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('users'), // 'name' debe ser único
-            ],
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                Rule::unique('users'), // 'email' debe ser único
-            ],
-            'password' => [
-                'required', // 'password' es REQUERIDO al crear
-                'string',
-                'min:8',
-            ],
-            'id_role_user' => 'required|integer|exists:roles,id_role',
-            'id_state_user' => 'required|integer|exists:states,id_state',
-            
-            // El 'idupdater_user_user' viene del formulario (es el admin logueado)
-            'idupdater_user_user' => 'required|integer|exists:users,id', 
-        ]);
+{
+    $validatedData = $request->validate([
+        'name' => 'required|string|max:255|unique:users',
+        'email' => 'required|email|max:255|unique:users',
+        'password' => 'required|string|min:8',
+        'idupdater_user_user' => 'nullable|integer|exists:users,id',
+    ]);
 
-        // --- 2. PREPARAR DATOS ADICIONALES ---
-        
-        // Hashear la contraseña
-        $validatedData['password'] = Hash::make($request->password);
-        
-        // Añadir el creador (el mismo que el actualizador en este caso)
-        $validatedData['idcreate_user_user'] = $request->idupdater_user_user;
+    $validatedData['password'] = Hash::make($request->password);
+    $validatedData['idcreate_user_user'] = $validatedData['idupdater_user_user'] ?? null;
 
-        // --- 3. CREAR EL USUARIO ---
-        // Gracias al $fillable que añadiste en el Paso 1,
-        // este create() ahora funcionará.
-        User::create($validatedData);
+    User::create($validatedData);
 
-        // --- 4. REDIRIGIR ---
-        // Redirige a la página de índice de usuarios con un mensaje.
-        return redirect()->route('users.index')->with('success', 'Usuario creado exitosamente.');
-    }
+    return redirect()->route('login')->with('success', 'Usuario creado exitosamente.');
+}
 
 
     // --- 3. AÑADE EL MÉTODO EDIT (PARA MOSTRAR EL FORMULARIO) ---
@@ -104,8 +74,8 @@ class UserController extends Controller
     {
         return Inertia::render('settings/UserForm', [
             'user' => $user->load(['role', 'state']), // Pasa el usuario a editar
-            'roles' => Role::all(['id_role as value', 'name_role as label']),
-            'states' => State::all(['id_state as value', 'name_state as label']),
+            // 'roles' => Role::all(['id_role as value', 'name_role as label']),
+            // 'states' => State::all(['id_state as value', 'name_state as label']),
         ]);
     }
 
@@ -138,8 +108,8 @@ class UserController extends Controller
                 'string',
                 'min:8',
             ],
-            'id_role_user' => 'required|integer|exists:roles,id_role',
-            'id_state_user' => 'required|integer|exists:states,id_state',
+            // 'id_role_user' => 'required|integer|exists:roles,id_role',
+            // 'id_state_user' => 'required|integer|exists:states,id_state',
             'idupdater_user_user' => 'required|integer|exists:users,id',
         ]);
 
@@ -153,7 +123,7 @@ class UserController extends Controller
         if ($request->filled('password')) {
             $dataToUpdate['password'] = Hash::make($request->password);
         }
-        
+
         // --- 4. ACTUALIZAR EL MODELO ---
         // Actualizamos el usuario ($user) que Laravel encontró por nosotros.
         $user->update($dataToUpdate);
