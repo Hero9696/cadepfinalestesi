@@ -2,51 +2,67 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens;
+use App\Models\Employee; // <-- ¡IMPORTACIÓN NECESARIA!
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasApiTokens, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    protected $primaryKey = 'id';
+
     protected $fillable = [
         'name',
         'email',
         'password',
+        'idcreate_user_user',
+        'idupdater_user_user',
+
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
-        'two_factor_secret',
-        'two_factor_recovery_codes',
         'remember_token',
     ];
 
+    // ==========================
+    // RELACIONES
+    // ==========================
+
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Define la relación uno a uno (hasOne) con el modelo Employee.
+     * Esto permite saber si el usuario ya está asignado como empleado.
      */
-    protected function casts(): array
+    public function employee()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'two_factor_confirmed_at' => 'datetime',
-        ];
+        // Clave foránea en la tabla 'employees' es 'id_user_employee',
+        // que apunta a la clave primaria 'id' de la tabla 'users'.
+        return $this->hasOne(Employee::class, 'id_user_employee', 'id');
+    }
+
+    // Relación con roles
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'id_role_user', 'id_role');
+    }
+
+    // Relación con estados
+    public function state()
+    {
+        return $this->belongsTo(State::class, 'id_state_user', 'id_state');
+    }
+
+    // Usuario que creó este registro
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'idcreate_user_user', 'id');
+    }
+
+    // Usuario que actualizó este registro
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'idupdater_user_user', 'id');
     }
 }
